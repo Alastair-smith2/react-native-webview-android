@@ -1,6 +1,8 @@
 # react-native-webview-android
 Simple React Native Android module to use Android's WebView inside your app (with experimental html file input support to handle file uploads in forms).
 
+Allows you to set cookies on URLs that will be loaded
+
 [![npm version](http://img.shields.io/npm/v/react-native-webview-android.svg?style=flat-square)](https://npmjs.org/package/react-native-webview-android "View this project on npm")
 [![npm downloads](http://img.shields.io/npm/dm/react-native-webview-android.svg?style=flat-square)](https://npmjs.org/package/react-native-webview-android "View this project on npm")
 [![npm licence](http://img.shields.io/npm/l/react-native-webview-android.svg?style=flat-square)](https://npmjs.org/package/react-native-webview-android "View this project on npm")
@@ -76,6 +78,9 @@ var WebViewAndroidExample = React.createClass({
         //   headers: {
         //     ...
         //   },
+        //   setCookies: {
+        //   [cookie]: domainUrl   
+        //   }
         // },
         status: 'No Page Loaded',
         backButtonEnabled: false,
