@@ -12,6 +12,10 @@ Allows you to set cookies on URLs that will be loaded
 ```bash
 npm install react-native-webview-android --save
 ```
+* In package.json, edit to be, then reinstall
+```
+ "react-native-webview-android": "git+https://github.com/Alastair-smith2/react-native-webview-android.git",
+```
 
 ### Add it to your android project
 
