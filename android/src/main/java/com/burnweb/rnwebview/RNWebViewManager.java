@@ -6,22 +6,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.os.Build;
+import android.util.Log;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.WebSettings;
 import android.webkit.CookieManager;
-
-import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.ReadableMapKeySetIterator;
+import android.webkit.CookieSyncManager;
 
 import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.common.MapBuilder;
+import com.facebook.react.common.annotations.VisibleForTesting;
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
-import com.facebook.react.common.annotations.VisibleForTesting;
 
-import org.json.JSONObject;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class RNWebViewManager extends SimpleViewManager<RNWebView> {
 
@@ -50,7 +51,6 @@ public class RNWebViewManager extends SimpleViewManager<RNWebView> {
     @Override
     public RNWebView createViewInstance(ThemedReactContext context) {
         RNWebView rnwv = new RNWebView(this, context);
-
         // Fixes broken full-screen modals/galleries due to body
         // height being 0.
         rnwv.setLayoutParams(
@@ -115,6 +115,31 @@ public class RNWebViewManager extends SimpleViewManager<RNWebView> {
         }
     }
 
+    public void setCookies(RNWebView view, @Nullable ReadableMap cookieAndDomain) {
+        // key should be the cookie, value should be domain
+        clearCookies();
+        ReadableMapKeySetIterator iterator = cookieAndDomain.keySetIterator();
+        while (iterator.hasNextKey()) {
+            String key = iterator.nextKey();
+            CookieManager.getInstance().setCookie(cookieAndDomain.getString(key), key);
+        }
+    }
+
+    private void clearCookies() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            CookieManager.getInstance().removeAllCookies(null);
+            CookieManager.getInstance().flush();
+        } else {
+            CookieSyncManager cookieSyncMngr=CookieSyncManager.createInstance(aPackage.getModule().getActivity());
+            cookieSyncMngr.startSync();
+            CookieManager cookieManager=CookieManager.getInstance();
+            cookieManager.removeAllCookie();
+            cookieManager.removeSessionCookie();
+            cookieSyncMngr.stopSync();
+            cookieSyncMngr.sync();
+        }
+    }
+
     @ReactProp(name = "javaScriptEnabled", defaultBoolean = true)
     public void setJavaScriptEnabled(RNWebView view, boolean javaScriptEnabled) {
         view.getSettings().setJavaScriptEnabled(javaScriptEnabled);
@@ -152,6 +177,9 @@ public class RNWebViewManager extends SimpleViewManager<RNWebView> {
                 return;
             }
             if (source.hasKey("uri")) {
+                if (source.hasKey("setCookies")) {
+                    setCookies(view, source.getMap("setCookies"));
+                }
                 if (source.hasKey("headers")) {
                     setHeaders(view, source.getMap("headers"));
                 }
